@@ -31,14 +31,11 @@ def handle_invalid_usage(error):
 def sitemap():
     return generate_sitemap(app)
 
-@app.route('/user', methods=['GET'])
-def handle_hello():
-
-    response_body = {
-        "msg": "Hello, this is your GET /user response "
-    }
-
-    return jsonify(response_body), 200
+@app.route('/users', methods=['GET'])
+def returnUsers():
+    user_query = User.query.all()
+    user_query =[pokemon.serialize() for pokemon in user_query]
+    return jsonify(user_query)
 
 @app.route('/populate', methods=['GET'])
 def populate():
@@ -125,21 +122,19 @@ def deletePeople(people_id):
         raise APIException('User not found', status_code=404)
     db.session.delete(person)
     db.session.commit()
-    return jsonify(people)
+    return jsonify(people),200
 
 @app.route('/people/<int:people_id>', methods=['GET'])
 def returnPerson(people_id):
     person = People.query.get(people_id)
     person = person.serialize()
-    return jsonify(person)
+    return jsonify(person), 200
 
 @app.route('/planets', methods=['GET'])
 def returnPlanets():
     planet_query = Planet.query.all()
     planet_query =[pokemon.serialize() for pokemon in planet_query]
     return jsonify(planet_query), 200
-    
-    return jsonify(planets)
 
 @app.route('/planets/<int:planet_id>', methods=['POST'])
 def addPlanet(planet_id):
@@ -160,7 +155,21 @@ def addPlanet(planet_id):
 
 @app.route('/planets/<int:planet_id>', methods=['PUT'])
 def updatePlanet(planet_id):
-    return jsonify(people[planet_id])
+    planet = Planet.query.get(planet_id)
+    if planet is None:
+        raise APIException('Planet not found', status_code=404)
+
+    if "id" in body:
+        planet.id = body["id"]
+    if "population" in body:
+        planet.population = body["population"]
+    if "terrain" in body:
+        planet.terrain = body["terrain"]
+    if "name" in body:
+        planet.name = body["name"]
+    db.session.commit()
+    return jsonify(planet), 200
+    
 
 @app.route('/planets/<int:planet_id>', methods=['DELETE'])
 def deletePlanet(planet_id):
@@ -173,11 +182,9 @@ def deletePlanet(planet_id):
 
 @app.route('/planets/<int:planet_id>', methods=['GET'])
 def returnPlanet(planet_id):
-    return jsonify(people[planet_id])
-
-@app.route('/users', methods=['GET'])
-def returnUsers():
-    return jsonify(users)
+    planet = Planet.query.get(planet_id)
+    planet = planet.serialize()
+    return jsonify(planet)
 
 @app.route('/users/favorites', methods=['GET'])
 def returnUserFavorites():
@@ -185,7 +192,7 @@ def returnUserFavorites():
 
 @app.route('/favorite/planet/<int:planet_id>', methods=['POST'])
 def addUserPlanetFavorite():
-    
+    """ activeUser= User.query. """
     return jsonify(user.favorites)
 
 @app.route('/favorite/people/<int:people_id>', methods=['POST'])

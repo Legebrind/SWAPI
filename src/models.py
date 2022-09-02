@@ -53,3 +53,35 @@ class Planet(db.Model):
             "population": self.population,
             "terrain": self.terrain            
         }
+
+class PeopleFavorite(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    userId = db.Column(db.Integer, unique=True, nullable=False)
+    peopleId = db.Column(db.Integer, unique=False, nullable=False)
+    
+
+    def __repr__(self):
+        return f'<PeopleFavorite id ={self.id}, userId ={self.userId}, peopleId ={self.peopleId}>'
+
+    def serialize(self):
+        return {
+            "id": self.id,
+            "userId": self.userId,
+            "peopleId": self.peopleId                       
+        }
+
+class PlanetFavorite(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    userId = db.Column(db.Integer, unique=True, nullable=False)
+    planetId = db.Column(db.Integer, unique=False, nullable=False)
+    
+
+    def __repr__(self):
+        return f'<PeopleFavorite id ={self.id}, userId ={self.userId}, planetId ={self.planetId}>'
+
+    def serialize(self):
+        return {
+            "id": self.id,
+            "userId": self.userId,
+            "planetId": self.planetId                       
+        }

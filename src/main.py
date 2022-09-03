@@ -8,7 +8,7 @@ from flask_swagger import swagger
 from flask_cors import CORS
 from utils import APIException, generate_sitemap
 from admin import setup_admin
-from models import db, User, People, Planet
+from models import db, User, People, Planet, PeopleFavorite, PlanetFavorite
 import requests
 #from models import Person
 
@@ -186,28 +186,62 @@ def returnPlanet(planet_id):
     planet = planet.serialize()
     return jsonify(planet)
 
-@app.route('/users/favorites', methods=['GET'])
+@app.route('/favorites', methods=['GET'])
 def returnUserFavorites():
-    return jsonify(user.favorites)
+    favoritePeople = ""
+    favoritePlanet = ""
+    activeUser = User.query.filter(User.is_active==True).first()
+    activeUser = activeUser.serialize()
+    if PeopleFavorite.query.filter(PeopleFavorite.userId == activeUser["id"]).first():
+        favoritePeople = PeopleFavorite.query.filter(PeopleFavorite.userId == activeUser["id"]).all()
+        favoritePeople =[pokemon.serialize() for pokemon in favoritePeople]
+    if PlanetFavorite.query.filter(PlanetFavorite.userId == activeUser["id"]).first():
+        favoritePlanet = PlanetFavorite.query.filter(PlanetFavorite.userId == activeUser["id"]).all()
+        favoritePlanet =[pokemon.serialize() for pokemon in favoritePlanet]    
+    
+    return [jsonify(favoritePeople),jsonify(favoritePlanet)]
+    
 
-@app.route('/favorite/planet/<int:planet_id>', methods=['POST'])
-def addUserPlanetFavorite():
-    """ activeUser= User.query. """
-    return jsonify(user.favorites)
+@app.route('/favoritePlanet/<int:planet_id>', methods=['POST'])
+def addUserPlanetFavorite(planet_id):
+    activeUser = User.query.filter(User.is_active==True).first()
+    if PlanetFavorite.query.filter(PlanetFavorite.userId == activeUser.id and planet_id == PlanetFavorite.planetId).first() is not None:
+        addPlanet = PlanetFavorite(
+           id = PlanetFavorite.query.count()+1,
+           userId = activeUser.id,
+           planetId = planet_id
+        )
+        db.session.add(addPlanet)
+        db.session.commit()
+    response_body = {
+        "msg" : "Planet added"
+    }
+    return jsonify(response_body)
 
-@app.route('/favorite/people/<int:people_id>', methods=['POST'])
+@app.route('/favoritePeople/<int:people_id>', methods=['POST'])
 def addUserPeopleFavorite():
-    
-    return jsonify(user.favorites)
+    activeUser = User.query.filter(User.is_active==True).first()
+    if PeopleFavorite.query.filter(PeopleFavorite.userId == activeUser.id and people_id == PeopleFavorite.peopleId).first() is not None:
+        addPeople = PeopleFavorite(
+           id = PeopleFavorite.query.count()+1,
+           userId = activeUser.id,
+           peopleId = people_id
+        )
+        db.session.add(addPeople)
+        db.session.commit()
+    response_body = {
+        "msg" : "Person added"
+    }
+    return jsonify(body_message)
 
-@app.route('/favorite/planet/<int:planet_id>', methods=['DELETE'])
+@app.route('/favoritePlanet/<int:planet_id>', methods=['DELETE'])
 def removeUserPlanetFavorite():
-    
+    activeUser = User.query.filter(User.is_active==True).first()
     return jsonify(user.favorites)
 
-@app.route('/favorite/people/<int:people_id>', methods=['DELETE'])
+@app.route('/favoritePeople/<int:people_id>', methods=['DELETE'])
 def removeUserPeopleFavorite():
-    
+    activeUser = User.query.filter(User.is_active==True).first()
     return jsonify(user.favorites)
 
 

@@ -35,7 +35,7 @@ def sitemap():
 def returnUsers():
     user_query = User.query.all()
     user_query =[pokemon.serialize() for pokemon in user_query]
-    return jsonify(user_query)
+    return jsonify(user_query),200
 
 @app.route('/populate', methods=['GET'])
 def populate():
@@ -70,7 +70,7 @@ def populate():
     response_body = {
         "msg": "Database has been populated "
     }
-    return jsonify(response_body), 200
+    return jsonify(response_body), 201
 
 @app.route('/people', methods=['GET'])
 def returnPeople():
@@ -78,7 +78,7 @@ def returnPeople():
     people_query =[i.serialize() for i in people_query]
     return jsonify(people_query), 200
 
-@app.route('/people/<int:people_id>', methods=['POST'])
+@app.route('/people', methods=['POST'])
 def addPeople(people_id):
     person = People.query.get(person_id)
     if person is not None:
@@ -86,15 +86,15 @@ def addPeople(people_id):
     
     person = request.get_json()
     person = People(
-            id = i+1,
-            name = results[i]["name"],
-            gender = results[i]["gender"],
-            hair_color = results[i]["hair_color"],
-            eye_color = results[i]["eye_color"]
+            id = person["id"],
+            name = person["name"],
+            gender = person["gender"],
+            hair_color = person["hair_color"],
+            eye_color = person["eye_color"]
         )
     db.session.add(person)
     db.session.commit()
-    return jsonify(people), 200
+    return jsonify(person), 201
 
 @app.route('/people/<int:people_id>', methods=['PUT'])
 def updatePeople(people_id):
@@ -136,7 +136,7 @@ def returnPlanets():
     planet_query =[pokemon.serialize() for pokemon in planet_query]
     return jsonify(planet_query), 200
 
-@app.route('/planets/<int:planet_id>', methods=['POST'])
+@app.route('/planets', methods=['POST'])
 def addPlanet(planet_id):
     planet = Planet.query.get(planet_id)
     if planet is not None:
@@ -144,10 +144,10 @@ def addPlanet(planet_id):
     
     planet = request.get_json()
     planet = Planet(
-        id = i+1,
-        name = results[i]["name"],
-        population = results[i]["population"],
-        terrain = results[i]["terrain"]
+        id = planet["id"],
+        name = planet["name"],
+        population = planet["population"],
+        terrain = planet["terrain"]
         )
     db.session.add(planet)
     db.session.commit()
@@ -199,7 +199,7 @@ def returnUserFavorites():
         favoritePlanet = PlanetFavorite.query.filter(PlanetFavorite.userId == activeUser["id"]).all()
         favoritePlanet =[pokemon.serialize() for pokemon in favoritePlanet]    
     
-    return [jsonify(favoritePeople),jsonify(favoritePlanet)]
+    return [jsonify(favoritePeople),jsonify(favoritePlanet)],200
     
 
 @app.route('/favoritePlanet/<int:planet_id>', methods=['POST'])
